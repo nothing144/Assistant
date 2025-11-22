@@ -491,6 +491,53 @@
       </div>
     </div>
 
+    <!-- Enhanced UI Elements -->
+    
+    <!-- Chat History Panel -->
+    <div id="chatHistoryPanel">
+      <div class="chat-history-header">
+        <h3>💬 Conversation History</h3>
+        <button id="closeHistoryBtn" class="close-history">&times;</button>
+      </div>
+      <div class="chat-history-content" id="chatHistoryContent">
+        <div class="empty-history">Loading...</div>
+      </div>
+      <button id="clearHistoryBtn" class="clear-history-btn">
+        🗑️ Clear History
+      </button>
+    </div>
+
+    <!-- Toggle History Button -->
+    <button id="toggleHistoryBtn" title="Chat History (Ctrl+H)">
+      📜
+    </button>
+
+    <!-- Live Conversation Indicator -->
+    <div id="liveIndicator" class="live-indicator">
+      <div class="live-dot"></div>
+      <span>Live Conversation</span>
+    </div>
+
+    <!-- Chat Messages Display -->
+    <div id="chatMessages"></div>
+
+    <!-- Toggle Chat Display Button -->
+    <button id="toggleChatBtn" title="Toggle Chat Display">
+      💬
+    </button>
+
+    <!-- Status Message -->
+    <div id="statusMessage"></div>
+
+    <!-- Listening Animation -->
+    <div id="listeningAnimation" class="listening-animation">
+      <div class="listening-waves">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
     <!--Jquery  -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
