@@ -450,16 +450,20 @@
                     type="text"
                     id="chatbox"
                     name="chatbox"
-                    placeholder="Ask me anything..."
+                    placeholder="Type or speak to JARVIS..."
                     class="input-field"
+                    autocomplete="off"
                   />
-                  <button id="MicBtn" class="glow-on-hover">
+                  <button id="MicBtn" class="glow-on-hover" title="Voice Input">
                     <i class="bi bi-mic"></i>
                   </button>
-                  <button id="ChatBtn" class="glow-on-hover">
-                    <i class="bi bi-chat-dots"></i>
+                  <button id="ChatBtn" class="glow-on-hover" title="Send Message">
+                    <i class="bi bi-send"></i>
                   </button>
-                  <button id="SettingBtn" class="glow-on-hover">
+                  <button id="LiveBtn" class="glow-on-hover" title="Live Conversation (Ctrl+L)">
+                    <i class="bi bi-broadcast"></i>
+                  </button>
+                  <button id="SettingBtn" class="glow-on-hover" title="Settings">
                     <i class="bi bi-gear-wide-connected"></i>
                   </button>
                 </div>
