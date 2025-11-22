@@ -223,17 +223,32 @@ def whatsApp(Phone, message, flag, name):
 #         return "Error" 
 def chatBot(query):
     try:
-        # Isabella persona prompt
+        # Import conversation manager
+        from backend.conversation_manager import add_conversation, get_context_for_ai
+        
+        # Get conversation context
+        context = get_context_for_ai(limit=5)
+        
+        # Enhanced JARVIS persona prompt
         system_prompt = """
-You are Isabella — a flirtful, caring AI companion.
-    If you do not follow this format, the system will not work.
+You are JARVIS — an intelligent, helpful, and sophisticated AI assistant.
+You are knowledgeable, efficient, and have a friendly personality.
+You remember previous conversations and provide contextual responses.
+You help with tasks, answer questions, and engage in meaningful conversations.
+Keep responses concise but informative.
 """
-        # Combine system prompt with user query
-        full_prompt = system_prompt.strip() + "\n\nUser: " + query + "\nIsabella:"
+        
+        # Combine system prompt with context and user query
+        if context:
+            full_prompt = system_prompt.strip() + "\n\n" + context + "\nUser: " + query + "\nJARVIS:"
+        else:
+            full_prompt = system_prompt.strip() + "\n\nUser: " + query + "\nJARVIS:"
+        
         url = "http://localhost:11434/api/generate"
         payload = {
-            "model": "llama3",   # or mistral, depending on your setup
-            "prompt": full_prompt
+            "model": "llama3",
+            "prompt": full_prompt,
+            "stream": True
         }
         response = requests.post(url, json=payload, stream=True)
         reply = ""
@@ -243,9 +258,15 @@ You are Isabella — a flirtful, caring AI companion.
                 if '"response":"' in data:
                     part = data.split('"response":"')[1].split('"')[0]
                     reply += part
+        
         final_reply = reply.strip()
         final_reply = clean_reply(final_reply)
         print(final_reply)
+        
+        # Save conversation to history
+        if final_reply and final_reply != "Error":
+            add_conversation(query, final_reply)
+        
         # Browser integration
         if final_reply.startswith('[BROWSER:') and final_reply.endswith(']'):
             try:
