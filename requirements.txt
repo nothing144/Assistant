@@ -26,6 +26,3 @@ playwright
 requests
 google-generativeai
 hugchat
-
-# Other
-sqlite3-python
