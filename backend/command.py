@@ -48,7 +48,7 @@ def takeAllCommands(message=None):
     if message is None:
         query = takecommand()  # If no message is passed, listen for voice input
         if not query:
-            return  # Exit if no query is received
+            return None  # Exit if no query is received
         print(query)
         eel.senderText(query)
     else:
@@ -60,7 +60,8 @@ def takeAllCommands(message=None):
         if query:
             if "open" in query:
                 from backend.feature import openCommand
-                openCommand(query)
+                result = openCommand(query)
+                return result
             elif "send message" in query or "call" in query or "video call" in query:
                 from backend.feature import findContact, whatsApp
                 flag = ""
@@ -75,16 +76,23 @@ def takeAllCommands(message=None):
                     else:
                         flag = 'video call'
                     whatsApp(Phone, query, flag, name)
+                    return "WhatsApp action completed"
+                return "Contact not found"
             elif "on youtube" in query:
                 from backend.feature import PlayYoutube
                 PlayYoutube(query)
+                return "YouTube action completed"
             else:
                 from backend.feature import chatBot
-                chatBot(query)
+                result = chatBot(query)
+                return result
         else:
             speak("No command was given.")
+            return "No command given"
     except Exception as e:
         print(f"An error occurred: {e}")
         speak("Sorry, something went wrong.")
-    
-    eel.ShowHood()
+        return f"Error: {str(e)}"
+    finally:
+        eel.ShowHood()
+        return None

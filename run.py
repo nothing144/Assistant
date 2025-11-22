@@ -1,26 +1,40 @@
 import multiprocessing
+import threading
+import signal
+import sys
 
+def signal_handler(sig, frame):
+    print("\nExiting gracefully...")
+    sys.exit(0)
 
 def startJarvis():
-    print ("Process 1 Starting...")
+    print("Process 1 Starting...")
     from main import start
     start()
     
 def listenHotword():
-    print ("Process 2 Starting...")
+    print("Process 2 Starting...")
     from backend.feature import hotword
     hotword()
+
+def run_hotword():
+    try:
+        hotword_thread = threading.Thread(target=listenHotword)
+        hotword_thread.daemon = True  # This ensures the thread exits when the main program does
+        hotword_thread.start()
+    except Exception as e:
+        print(f"Error starting hotword thread: {e}")
     
 if __name__ == "__main__":
-    process1 = multiprocessing.Process(target=startJarvis)
-    process2 = multiprocessing.Process(target=listenHotword)
-    process1.start()
-    process2.start()
-    process1.join()
+    signal.signal(signal.SIGINT, signal_handler)
     
-    if process2.is_alive():
-        process2.terminate()
-        print("Process 2 terminated.")
-        process2.join()
+    try:
+        # Start hotword detection in a background thread
+        run_hotword()
         
-    print("System is terminated.")
+        # Run Jarvis (Eel) in the main thread
+        startJarvis()
+    except Exception as e:
+        print(f"Error in main: {e}")
+    finally:
+        print("System is terminated.")

@@ -46,6 +46,7 @@ $(document).ready(function () {
     $("#SiriWave").attr("hidden", false);
 
     eel.takeAllCommands()();
+    eel.start_live_conversation()();  
   });
 
   function doc_keyUp(e) {
