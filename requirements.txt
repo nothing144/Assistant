@@ -1,0 +1,31 @@
+# Core Dependencies
+eel
+opencv-python
+numpy
+Pillow
+
+# Speech & Audio
+SpeechRecognition
+pyttsx3
+pyaudio
+pygame
+pvporcupine
+
+# System Control
+pycaw
+comtypes
+screen-brightness-control
+psutil
+
+# Automation
+pyautogui
+pywhatkit
+playwright
+
+# AI & Chatbot
+requests
+google-generativeai
+hugchat
+
+# Other
+sqlite3-python
