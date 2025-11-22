@@ -31,10 +31,49 @@ import sqlite3
 import requests
 
 from backend.helper import extract_yt_term, remove_words
+from backend.conversation_manager import get_all_conversations, get_recent_conversations, clear_history
+
 conn = sqlite3.connect("jarvis.db")
 cursor = conn.cursor()
 # Initialize pygame mixer
 pygame.mixer.init()
+
+
+# Expose conversation history functions to frontend
+@eel.expose
+def getConversationHistory():
+    """Get all conversation history for display"""
+    try:
+        conversations = get_all_conversations()
+        return conversations
+    except Exception as e:
+        print(f"Error getting conversation history: {e}")
+        return []
+
+
+@eel.expose
+def getRecentConversations(limit=20):
+    """Get recent conversations"""
+    try:
+        conversations = get_recent_conversations(limit)
+        return conversations
+    except Exception as e:
+        print(f"Error getting recent conversations: {e}")
+        return []
+
+
+@eel.expose
+def clearConversationHistory():
+    """Clear all conversation history"""
+    try:
+        result = clear_history()
+        if result:
+            speak("Conversation history cleared")
+            return True
+        return False
+    except Exception as e:
+        print(f"Error clearing history: {e}")
+        return False
 
 #when using gemini api
 # genai.configure(api_key="AIzaSyBQau2W1-Ur8YZk5WmcEK2sCemlm_3dnys")
