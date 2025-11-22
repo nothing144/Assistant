@@ -308,50 +308,144 @@ Keep responses concise but informative.
 
 recognizer = sr.Recognizer()
 mic = sr.Microphone()
-# Function to listen user continuously
-def listen_user():
-    with mic as source:
-        print("🎙 Listening...")
-        recognizer.adjust_for_ambient_noise(source, duration=1)
-        try:
-            audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
-        except sr.WaitTimeoutError:
-            print("⌛ Timeout, no speech detected")
-            return ""
 
-    try:
-        query = recognizer.recognize_google(audio, language="en-IN")
-        print(f"👉 User said: {query}")
-        return query.lower()
-    except sr.UnknownValueError:
-        print("😶 Could not understand audio")
-        return ""
-    except sr.RequestError as e:
-        print(f"🌐 API Error: {e}")
-        return ""
-    except Exception as e:
-        print(f"⚠️ Unexpected Error: {e}")
-        return ""
+# Configure recognizer for better performance
+recognizer.energy_threshold = 4000  # Adjust based on environment
+recognizer.dynamic_energy_threshold = True
+recognizer.dynamic_energy_adjustment_damping = 0.15
+recognizer.dynamic_energy_ratio = 1.5
+recognizer.pause_threshold = 0.8
+
+# Function to listen user continuously with improved error handling
+def listen_user(retry_count=2):
+    """Enhanced listening with retry logic and better error handling"""
+    for attempt in range(retry_count):
+        try:
+            with mic as source:
+                print(f"🎙 Listening... (Attempt {attempt + 1}/{retry_count})")
+                eel.DisplayMessage("Listening...")
+                
+                # Adjust for ambient noise
+                recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                
+                try:
+                    audio = recognizer.listen(source, timeout=6, phrase_time_limit=15)
+                except sr.WaitTimeoutError:
+                    print("⌛ Timeout, no speech detected")
+                    if attempt == retry_count - 1:
+                        return ""
+                    continue
+
+            try:
+                print("🔄 Recognizing...")
+                eel.DisplayMessage("Recognizing...")
+                query = recognizer.recognize_google(audio, language="en-IN")
+                print(f"✅ User said: {query}")
+                eel.DisplayMessage(query)
+                return query.lower()
+            except sr.UnknownValueError:
+                print("😶 Could not understand audio")
+                if attempt == retry_count - 1:
+                    speak("Sorry, I couldn't understand that")
+                    return ""
+                continue
+            except sr.RequestError as e:
+                print(f"🌐 API Error: {e}")
+                speak("Network error, please try again")
+                return ""
+                
+        except Exception as e:
+            print(f"⚠️ Unexpected Error: {e}")
+            if attempt == retry_count - 1:
+                return ""
+            continue
+    
+    return ""
+
+
+# Global flag for live conversation state
+live_conversation_active = False
 
 
 @eel.expose
 def start_live_conversation():
-    speak("Live conversation started, I am listening...")
+    """Enhanced live conversation with better state management"""
+    global live_conversation_active
+    
+    if live_conversation_active:
+        speak("Live conversation is already active")
+        return "Already active"
+    
+    live_conversation_active = True
+    speak("Live conversation mode activated. Say exit, stop, or quit to end the conversation.")
+    
+    conversation_count = 0
+    max_continuous_failures = 3
+    continuous_failures = 0
+    
+    try:
+        while live_conversation_active:
+            query = listen_user(retry_count=2)
+            
+            # Check for exit commands
+            if query in ["exit", "stop", "quit", "bye", "goodbye", "end conversation"]:
+                speak("Ending live conversation mode. Goodbye!")
+                break
+            
+            # Handle empty query
+            if query.strip() == "":
+                continuous_failures += 1
+                if continuous_failures >= max_continuous_failures:
+                    speak("I haven't heard anything for a while. Ending live mode.")
+                    break
+                continue
+            
+            # Reset failure counter on successful recognition
+            continuous_failures = 0
+            conversation_count += 1
+            
+            # Process the query
+            try:
+                reply = chatBot(query)
+                
+                # Visual feedback
+                eel.senderText(query)
+                eel.receiverText(reply if reply else "I'm not sure how to respond to that")
+                
+            except Exception as e:
+                print(f"Error in chatBot: {e}")
+                speak("Sorry, I encountered an error processing that")
+                continue
+            
+            # Small pause between conversations
+            time.sleep(0.5)
+            
+    except KeyboardInterrupt:
+        speak("Live conversation interrupted")
+    except Exception as e:
+        print(f"Error in live conversation: {e}")
+        speak("An error occurred in live conversation mode")
+    finally:
+        live_conversation_active = False
+        speak("Live conversation mode ended")
+        print(f"📊 Total conversations: {conversation_count}")
+    
+    return "Conversation ended"
 
-    while True:
-        query = listen_user()
 
-        if query in ["exit", "stop", "quit", "bye"]:
-            speak("Okay, exiting live mode 👋")
-            break
+@eel.expose
+def stop_live_conversation():
+    """Stop live conversation mode"""
+    global live_conversation_active
+    live_conversation_active = False
+    speak("Stopping live conversation")
+    return "Stopped"
 
-        if query.strip() == "":
-            continue  
 
-        reply = chatBot(query)
-
-    speak("Back to initial state ✅")
-    return None
+@eel.expose
+def get_live_status():
+    """Check if live conversation is active"""
+    return live_conversation_active
 
  
 
